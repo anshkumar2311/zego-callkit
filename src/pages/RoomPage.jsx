@@ -2,41 +2,40 @@ import React from 'react';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { useParams } from 'react-router-dom';
 import { appId, serverSecretCode } from '../data';
+import { useUser } from "@clerk/clerk-react";
 
 const RoomPage = () => {
     const { id } = useParams();
+    const { user } = useUser();
 
     let myMeeting = async (element) => {
-        // generate Kit Token
+        if (!user) return;
+
         const appID = appId;
         const serverSecret = serverSecretCode;
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, id, String(Date.now()), "Ansh");
+        const username =
+            user.fullName || user.username || user.primaryEmailAddress?.emailAddress || "Guest";
 
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            id,
+            user.id,
+            username
+        );
 
-        // Create instance object from Kit Token.
         const zp = ZegoUIKitPrebuilt.create(kitToken);
-        // start the call
         zp.joinRoom({
             container: element,
             sharedLinks: [
-                {
-                    name: 'copy link',
-                    url:
-                        `http://localhost:5173/room/${id}`
-                },
+                { name: 'Copy Link', url: `${window.location.origin}/room/${id}` },
             ],
-            scenario: {
-                mode: ZegoUIKitPrebuilt.OneONoneCall, // To implement 1-on-1 calls, modify the parameter here to [ZegoUIKitPrebuilt.OneONoneCall]. you can also use [ZegoUIKitPrebuilt.GroupCall] to implement group calls.
-            },
+            scenario: { mode: ZegoUIKitPrebuilt.OneONoneCall },
             showScreenSharingButton: true,
         });
-
-
     };
-    return (
-        <div ref={myMeeting}>
-        </div>
-    )
-}
 
-export default RoomPage
+    return <div ref={myMeeting} style={{ width: "100%", height: "100vh" }} />;
+};
+
+export default RoomPage;
