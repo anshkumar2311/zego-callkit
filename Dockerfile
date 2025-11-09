@@ -1,5 +1,5 @@
 # Yeh batata hai ki hum Node.js ka base image use kar rahe hain. apline lightweight version hai linux ka.
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Set working directory Docker container ke andar ek folder banata hai /app naam ka
 WORKDIR /app
@@ -16,8 +16,8 @@ COPY . .
 # Yeh vite build chalata hai → jo React app ko production-ready static files (dist/ folder) me convert karta hai.
 RUN npm run build
 
-#Yeh batata hai ki container ke andar app port 5173 pe chalegi.
-EXPOSE 5173
+# Vite preview 4173 port use karta hai
+EXPOSE 4173
 
-#Yeh default command hai jo container start hone par chalegi.
-CMD ["npm", "run", "preview"]
+# Host ko 0.0.0.0 set karna zaroori hai (Render + Docker ke liye)
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
